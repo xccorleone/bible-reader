@@ -33,11 +33,12 @@ class BuildBibleDBTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(row[0], "起初神创造天地。")
 
-    def test_john_is_book_43(self):
+    def test_book_number_follows_array_position(self):
+        # The second book in the source array becomes book 2.
         row = self.conn.execute(
-            "SELECT text FROM verses WHERE book=43 AND chapter=1 AND verse=1"
+            "SELECT text FROM verses WHERE book=2 AND chapter=1 AND verse=1"
         ).fetchone()
-        self.assertEqual(row[0], "太初有道，道与神同在，道就是神。")
+        self.assertEqual(row[0], "以色列的众子，各带家眷，和雅各一同来到埃及。")
 
     def test_book_metadata_derived(self):
         row = self.conn.execute(
@@ -47,7 +48,7 @@ class BuildBibleDBTests(unittest.TestCase):
 
     def test_only_present_books_in_metadata(self):
         ids = [r[0] for r in self.conn.execute("SELECT id FROM books ORDER BY id").fetchall()]
-        self.assertEqual(ids, [1, 43])  # only Genesis & John have verses in the fixture
+        self.assertEqual(ids, [1, 2])  # only the two fixture books have verses
 
 
 if __name__ == "__main__":

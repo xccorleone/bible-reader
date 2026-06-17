@@ -50,9 +50,7 @@ def build(source_json_path: str, db_path: str, translation_id: str) -> None:
         conn.executescript(SCHEMA)
 
         max_chapter_per_book = {}
-        for array_index, book in enumerate(data, start=1):
-            abbrev = book.get("abbrev", "").lower()
-            book_index = books_meta.ABBREV_TO_NUMBER.get(abbrev, array_index)
+        for book_index, book in enumerate(data, start=1):
             chapters = book.get("chapters", [])
             for chapter_index, verses in enumerate(chapters, start=1):
                 for verse_index, text in enumerate(verses, start=1):
