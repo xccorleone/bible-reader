@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(ReadingSettings.self) private var settings
     let translationManager: TranslationManager
+    @Environment(FocusCoordinator.self) private var focus
 
     var body: some View {
         @Bindable var settings = settings
@@ -22,6 +23,11 @@ struct SettingsView: View {
             Section("译本") {
                 NavigationLink("译本管理") {
                     TranslationsView(manager: translationManager)
+                }
+            }
+            Section("专注") {
+                NavigationLink("专注锁定") {
+                    FocusSettingsView()
                 }
             }
         }
