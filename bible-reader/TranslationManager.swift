@@ -3,6 +3,7 @@ import Observation
 
 enum TranslationInstallError: Error, Equatable {
     case checksumMismatch
+    case cannotDeleteBuiltIn
 }
 
 /// Registry of available Bible translations: the built-in `cuv` plus any the
@@ -63,6 +64,16 @@ final class TranslationManager {
             try FileManager.default.removeItem(at: dest)
         }
         try FileManager.default.moveItem(at: tempFile, to: dest)
+        refreshInstalled()
+    }
+
+    /// Removes a downloaded translation. The built-in `cuv` cannot be deleted.
+    func delete(_ id: String) throws {
+        guard id != Self.builtInID else { throw TranslationInstallError.cannotDeleteBuiltIn }
+        let file = directory.appending(path: "\(id).sqlite")
+        if FileManager.default.fileExists(atPath: file.path) {
+            try FileManager.default.removeItem(at: file)
+        }
         refreshInstalled()
     }
 

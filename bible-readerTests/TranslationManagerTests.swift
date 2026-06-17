@@ -101,4 +101,26 @@ struct TranslationManagerTests {
         #expect(!FileManager.default.fileExists(atPath: dir.appending(path: "kjv.sqlite").path))
         #expect(!mgr.installed.contains { $0.id == "kjv" })
     }
+
+    @Test func deleteRemovesDownloadedFile() throws {
+        let dir = try tempDir()
+        _ = try makeTranslationFile(id: "kjv", dir: dir, text: "x")
+        let mgr = try makeManager(dir: dir, downloader: StubDownloader())
+        mgr.refreshInstalled()
+        #expect(mgr.installed.contains { $0.id == "kjv" })
+
+        try mgr.delete("kjv")
+
+        #expect(!FileManager.default.fileExists(atPath: dir.appending(path: "kjv.sqlite").path))
+        #expect(!mgr.installed.contains { $0.id == "kjv" })
+    }
+
+    @Test func deleteRefusesBuiltIn() throws {
+        let dir = try tempDir()
+        let mgr = try makeManager(dir: dir, downloader: StubDownloader())
+        #expect(throws: TranslationInstallError.cannotDeleteBuiltIn) {
+            try mgr.delete("cuv")
+        }
+        #expect(mgr.installed.contains { $0.id == "cuv" })
+    }
 }
