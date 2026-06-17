@@ -40,4 +40,17 @@ struct BibleStoreTests {
         let verses = try store.verses(book: 1, chapter: 99)
         #expect(verses.isEmpty)
     }
+
+    // Integration: exercises the real bundled bible.sqlite via the app host.
+    @Test func bundledDatabaseLoadsRealCUV() throws {
+        let store = try BibleStore.bundled(translationID: "cuv")
+        let books = try store.allBooks()
+        #expect(books.count == 66)
+        #expect(books.first?.id == 1)
+        #expect(books.first { $0.id == 43 }?.chapterCount == 21)  // John has 21 chapters
+
+        let genesis1 = try store.verses(book: 1, chapter: 1)
+        #expect(genesis1.count >= 31)                              // Genesis 1 has 31 verses
+        #expect(genesis1.first?.text.contains("起初") == true)
+    }
 }
