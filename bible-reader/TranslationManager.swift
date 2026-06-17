@@ -32,6 +32,10 @@ final class TranslationManager {
     private let directory: URL
     private let manifestURL: URL
 
+    /// Manifest display names by id, recorded on each catalog fetch so the UI
+    /// can show friendly names for installed translations too.
+    private var manifestNames: [String: String] = [:]
+
     init(bundledStore: BibleStore, downloader: Downloader, directory: URL, manifestURL: URL) {
         self.bundledStore = bundledStore
         self.downloader = downloader
@@ -75,6 +79,32 @@ final class TranslationManager {
             try FileManager.default.removeItem(at: file)
         }
         refreshInstalled()
+    }
+
+    /// Fetches the hosted manifest and computes `available` = manifest minus
+    /// already-installed translations. Errors land in `catalogError`; reading
+    /// is never affected because the built-in translation is always present.
+    func fetchCatalog() async {
+        catalogError = nil
+        do {
+            let data = try await downloader.data(from: manifestURL)
+            let manifest = try TranslationManifest.decode(data)
+            for t in manifest.translations { manifestNames[t.id] = t.nameZH }
+            let installedIDs = Set(installed.map(\.id))
+            available = manifest.translations.filter { !installedIDs.contains($0.id) }
+        } catch TranslationManifestError.unsupportedSchema {
+            catalogError = "译本目录需要更新 App 版本。"
+            available = []
+        } catch {
+            catalogError = "无法获取译本目录:\(error.localizedDescription)"
+            available = []
+        }
+    }
+
+    /// Manifest display name for `id`, if a catalog fetch has provided it.
+    func displayName(for id: String) -> String {
+        if id == Self.builtInID { return Self.builtInName }
+        return manifestNames[id] ?? id.uppercased()
     }
 
     /// Rebuilds `installed` from the built-in store plus every `<id>.sqlite`

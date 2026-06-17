@@ -123,4 +123,37 @@ struct TranslationManagerTests {
         }
         #expect(mgr.installed.contains { $0.id == "cuv" })
     }
+
+    @Test func fetchCatalogListsNotYetInstalled() async throws {
+        let dir = try tempDir()
+        _ = try makeTranslationFile(id: "kjv", dir: dir, text: "x")  // kjv already installed
+        let stub = StubDownloader()
+        stub.manifestData = Data("""
+        { "schemaVersion": 1, "translations": [
+          { "id": "kjv", "nameZH": "英王钦定本", "nameEN": "KJV", "abbrev": "KJV",
+            "language": "en", "url": "https://e.com/kjv.sqlite", "bytes": 1, "sha256": "a" },
+          { "id": "web", "nameZH": "世界英文圣经", "nameEN": "WEB", "abbrev": "WEB",
+            "language": "en", "url": "https://e.com/web.sqlite", "bytes": 1, "sha256": "b" } ] }
+        """.utf8)
+        let mgr = try makeManager(dir: dir, downloader: stub)
+        mgr.refreshInstalled()
+
+        await mgr.fetchCatalog()
+
+        // kjv is installed → only web is offered for download.
+        #expect(mgr.available.map(\.id) == ["web"])
+        #expect(mgr.catalogError == nil)
+    }
+
+    @Test func fetchCatalogSurfacesError() async throws {
+        let dir = try tempDir()
+        let stub = StubDownloader()
+        stub.thrownError = URLError(.notConnectedToInternet)
+        let mgr = try makeManager(dir: dir, downloader: stub)
+
+        await mgr.fetchCatalog()
+
+        #expect(mgr.catalogError != nil)
+        #expect(mgr.available.isEmpty)
+    }
 }
