@@ -13,7 +13,7 @@ struct bible_readerApp: App {
     @State private var settings = ReadingSettings()
 
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([LastReadPosition.self])
+        let schema = Schema([LastReadPosition.self, Bookmark.self, Highlight.self, Note.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
