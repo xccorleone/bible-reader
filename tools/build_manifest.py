@@ -52,7 +52,10 @@ if __name__ == "__main__":
         print("Usage: python3 build_manifest.py <base_url> <out_manifest.json>")
         sys.exit(1)
     base_url, out = sys.argv[1], sys.argv[2]
-    manifest = build(CATALOG, base_url=base_url)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    specs = [(os.path.join(script_dir, filename), id, zh, en, ab, lang)
+             for (filename, id, zh, en, ab, lang) in CATALOG]
+    manifest = build(specs, base_url=base_url)
     with open(out, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
     print(f"Wrote {out} ({len(manifest['translations'])} translations)")

@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import shutil
 import tempfile
 import unittest
 
@@ -10,6 +11,7 @@ import build_manifest
 class BuildManifestTests(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.dir, ignore_errors=True)
         self.kjv = os.path.join(self.dir, "kjv.sqlite")
         with open(self.kjv, "wb") as f:
             f.write(b"fake sqlite bytes")

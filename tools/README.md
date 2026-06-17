@@ -58,7 +58,9 @@ the manifest:
 
     # Sources from getbible.net v2 (public domain): kjv, web
     curl -sL -o raw_kjv.json https://api.getbible.net/v2/kjv.json
+    curl -sL -o raw_web.json https://api.getbible.net/v2/web.json
     python3 convert_source.py raw_kjv.json source_kjv.json   # if conversion needed
+    python3 convert_source.py raw_web.json source_web.json   # if conversion needed
     python3 build_bible_db.py source_kjv.json kjv.sqlite kjv
     python3 build_bible_db.py source_web.json web.sqlite web
 
