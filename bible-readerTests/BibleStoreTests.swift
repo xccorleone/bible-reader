@@ -53,6 +53,13 @@ struct BibleStoreTests {
         let genesis1 = try store.verses(book: 1, chapter: 1)
         #expect(genesis1.count >= 31)                              // Genesis 1 has 31 verses
         #expect(genesis1.first?.text.contains("起初") == true)
+
+        // Paragraph (分段) flags come from the bundled DB: Genesis 1 opens
+        // paragraphs at v1, v3, v6, … while v2 continues the first paragraph.
+        let byNumber = Dictionary(uniqueKeysWithValues: genesis1.map { ($0.number, $0) })
+        #expect(byNumber[1]?.startsParagraph == true)
+        #expect(byNumber[2]?.startsParagraph == false)
+        #expect(byNumber[3]?.startsParagraph == true)
     }
 
     @Test func opensTranslationFromFilePath() throws {

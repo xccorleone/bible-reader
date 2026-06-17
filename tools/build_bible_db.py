@@ -28,6 +28,9 @@ CREATE TABLE verses (
     chapter INTEGER NOT NULL,
     verse INTEGER NOT NULL,
     text TEXT NOT NULL,
+    -- 1 when this verse begins a new paragraph (分段). Translations without
+    -- paragraph data leave this 0 and the reader renders one flat block.
+    para_start INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (translation_id, book, chapter, verse)
 );
 CREATE VIRTUAL TABLE verses_fts USING fts5(
@@ -41,9 +44,26 @@ CREATE VIRTUAL TABLE verses_fts USING fts5(
 """
 
 
-def build(source_json_path: str, db_path: str, translation_id: str) -> None:
+def _load_paragraphs(path: str | None) -> set:
+    """Load extract_paragraphs.py output into a {(book, chapter, verse)} set
+    of paragraph-start positions. Returns an empty set when no file is given."""
+    if not path:
+        return set()
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    starts = set()
+    for book_key, chapters in data.items():
+        for chapter_key, verses in chapters.items():
+            for verse in verses:
+                starts.add((int(book_key), int(chapter_key), int(verse)))
+    return starts
+
+
+def build(source_json_path: str, db_path: str, translation_id: str,
+          paragraphs_path: str | None = None) -> None:
     with open(source_json_path, encoding="utf-8") as f:
         data = json.load(f)
+    para_starts = _load_paragraphs(paragraphs_path)
 
     conn = sqlite3.connect(db_path)
     try:
@@ -60,10 +80,11 @@ def build(source_json_path: str, db_path: str, translation_id: str) -> None:
                     # later verses at their true numbers (e.g. WEB Luke 17:37).
                     if text == "":
                         continue
+                    para = 1 if (book_index, chapter_index, verse_index) in para_starts else 0
                     conn.execute(
-                        "INSERT INTO verses (translation_id, book, chapter, verse, text) "
-                        "VALUES (?, ?, ?, ?, ?)",
-                        (translation_id, book_index, chapter_index, verse_index, text),
+                        "INSERT INTO verses (translation_id, book, chapter, verse, text, para_start) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (translation_id, book_index, chapter_index, verse_index, text, para),
                     )
                     conn.execute(
                         "INSERT INTO verses_fts (text, translation_id, book, chapter, verse) "
@@ -89,8 +110,10 @@ def build(source_json_path: str, db_path: str, translation_id: str) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python3 build_bible_db.py <source.json> <out.sqlite> <translation_id>")
+    if len(sys.argv) not in (4, 5):
+        print("Usage: python3 build_bible_db.py <source.json> <out.sqlite> "
+              "<translation_id> [paragraphs.json]")
         sys.exit(1)
-    build(sys.argv[1], sys.argv[2], sys.argv[3])
+    paragraphs = sys.argv[4] if len(sys.argv) == 5 else None
+    build(sys.argv[1], sys.argv[2], sys.argv[3], paragraphs)
     print(f"Built {sys.argv[2]} from {sys.argv[1]} (translation={sys.argv[3]})")
