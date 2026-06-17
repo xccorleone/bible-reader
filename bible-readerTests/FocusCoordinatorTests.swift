@@ -9,12 +9,14 @@ struct FocusCoordinatorTests {
         var authorized = true
         var shielded = false
         var lastSelection: Data?
+        var persistedSelection: Data?
         var monitoring = false
         var requestCalled = false
         var isAuthorized: Bool { authorized }
         func requestAuthorization() async throws { requestCalled = true }
         func applyShield(selectionData: Data?) { shielded = true; lastSelection = selectionData }
         func removeShield() { shielded = false }
+        func persistSelection(data: Data?) { persistedSelection = data }
         func startDailyMonitoring() { monitoring = true }
         func stopDailyMonitoring() { monitoring = false }
     }
@@ -101,5 +103,19 @@ struct FocusCoordinatorTests {
         #expect(lock.shielded == false)
         coord.reconcile()                       // a later foreground must NOT re-shield
         #expect(lock.shielded == false)
+    }
+
+    @Test func changingSelectionAfterCompletionPersistsNewToken() throws {
+        let context = try makeContext()
+        let lock = FakeLock()
+        let clock = Clock()
+        let coord = FocusCoordinator(context: context, lock: lock, now: { clock.t }, calendar: utc)
+        coord.setTarget(minutes: 1)
+        coord.setSelection(data: Data([1]))
+        coord.setEnabled(true)
+        coord.recordReading(seconds: 60)          // complete today → unshielded
+        #expect(lock.shielded == false)
+        coord.setSelection(data: Data([7]))       // change selection AFTER completion
+        #expect(lock.persistedSelection == Data([7]))  // new token persisted despite no shield
     }
 }

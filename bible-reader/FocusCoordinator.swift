@@ -84,6 +84,7 @@ final class FocusCoordinator {
     func setSelection(data: Data?) {
         plan.selectionToken = data
         try? context.save()
+        lock.persistSelection(data: data)
         reconcile()
     }
 

@@ -6,7 +6,7 @@
 import SwiftUI
 import SwiftData
 
-@main
+@main @MainActor
 struct bible_readerApp: App {
     @State private var settings = ReadingSettings()
     @Environment(\.scenePhase) private var scenePhase

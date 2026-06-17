@@ -50,6 +50,12 @@ final class FamilyControlsLockController: LockControlling {
 #endif
     }
 
+    func persistSelection(data: Data?) {
+#if os(iOS)
+        FocusSharedStore.saveSelection(data)
+#endif
+    }
+
     func startDailyMonitoring() {
 #if os(iOS)
         let schedule = DeviceActivitySchedule(
