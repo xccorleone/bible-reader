@@ -30,10 +30,15 @@ struct ContentView: View {
                         .tabItem { Label("阅读", systemImage: "book") }
                         .tag(0)
                     NavigationStack {
+                        SearchView(service: SearchService(store: store), books: books, onOpen: openReference)
+                    }
+                    .tabItem { Label("搜索", systemImage: "magnifyingglass") }
+                    .tag(1)
+                    NavigationStack {
                         AnnotationsView(books: books, onOpen: openReference)
                     }
                     .tabItem { Label("我的标注", systemImage: "bookmark") }
-                    .tag(1)
+                    .tag(2)
                 }
             } else if let fatalMessage {
                 ContentUnavailableView("无法打开圣经数据", systemImage: "exclamationmark.triangle", description: Text(fatalMessage))
