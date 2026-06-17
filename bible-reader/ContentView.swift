@@ -74,10 +74,12 @@ struct ContentView: View {
         }
     }
 
-    /// Jumps the reading tab to the chapter containing `ref`.
+    /// Jumps the reading tab to the chapter containing `ref`, replacing the
+    /// current reading stack so Back returns to the book list.
     private func openReference(_ ref: Reference) {
         guard let book = books.first(where: { $0.id == ref.book }) else { return }
         selectedTab = 0
+        path = NavigationPath()
         path.append(NavRoute.reading(book: book, chapter: ref.chapter))
     }
 
