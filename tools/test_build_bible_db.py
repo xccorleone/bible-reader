@@ -1,4 +1,5 @@
 # tools/test_build_bible_db.py
+import json
 import os
 import sqlite3
 import tempfile
@@ -59,6 +60,34 @@ class BuildBibleDBTests(unittest.TestCase):
             ("神创造",),
         ).fetchall()
         self.assertIn((1, 1, 1), rows)  # 起初神创造天地。
+
+
+class OmittedVerseTests(unittest.TestCase):
+    """Translations with textual-variant omissions (e.g. WEB Luke 17:36) reach
+    build_bible_db as empty-string placeholders from convert_source gap-filling.
+    The builder must skip them while keeping later verses at their true number."""
+
+    def test_empty_verse_skipped_keeps_numbering(self):
+        # Chapter with verse 2 omitted: ["v1", "", "v3"].
+        src = [{"abbrev": "x", "chapters": [["v1", "", "v3"]]}]
+        src_file = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump(src, src_file)
+        src_file.close()
+        db_file = tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False)
+        db_file.close()
+        try:
+            build_bible_db.build(src_file.name, db_file.name, translation_id="web")
+            conn = sqlite3.connect(db_file.name)
+            try:
+                rows = conn.execute("SELECT verse, text FROM verses ORDER BY verse").fetchall()
+                self.assertEqual(rows, [(1, "v1"), (3, "v3")])  # no verse 2; v3 keeps its number
+                fts_count = conn.execute("SELECT COUNT(*) FROM verses_fts").fetchone()[0]
+                self.assertEqual(fts_count, 2)  # empty verse not indexed either
+            finally:
+                conn.close()
+        finally:
+            os.unlink(src_file.name)
+            os.unlink(db_file.name)
 
 
 if __name__ == "__main__":

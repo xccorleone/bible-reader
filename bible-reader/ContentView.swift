@@ -13,10 +13,10 @@ enum NavRoute: Hashable {
 }
 
 /// Hosted catalog of downloadable translations. Points at the committed
-/// manifest; the referenced .sqlite assets live on the GitHub Release.
-/// TODO(deploy): replace OWNER/REPO once the repo has a remote + release.
+/// manifest; the referenced .sqlite assets live on the GitHub Release
+/// `translations-v1` (built via tools/build_manifest.py).
 let translationManifestURL = URL(string:
-    "https://raw.githubusercontent.com/OWNER/REPO/main/translations/manifest.json")!
+    "https://raw.githubusercontent.com/xccorleone/bible-reader/main/translations/manifest.json")!
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext

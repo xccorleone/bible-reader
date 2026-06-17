@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "translations": [
+    {
+      "id": "kjv",
+      "nameZH": "英王钦定本",
+      "nameEN": "King James Version",
+      "abbrev": "KJV",
+      "language": "en",
+      "url": "https://github.com/xccorleone/bible-reader/releases/download/translations-v1/kjv.sqlite",
+      "bytes": 23113728,
+      "sha256": "63f991e2d6f6f11d1708d2bd36c0e047914ec0f09fb9231df0807686b16b6bd7"
+    },
+    {
+      "id": "web",
+      "nameZH": "世界英文圣经",
+      "nameEN": "World English Bible",
+      "abbrev": "WEB",
+      "language": "en",
+      "url": "https://github.com/xccorleone/bible-reader/releases/download/translations-v1/web.sqlite",
+      "bytes": 22614016,
+      "sha256": "e685772fcca618ad3ec63d2f832f1f1504a440f44b1e9d683fa717b91ae32323"
+    }
+  ]
+}

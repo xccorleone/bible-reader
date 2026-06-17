@@ -55,6 +55,11 @@ def build(source_json_path: str, db_path: str, translation_id: str) -> None:
             chapters = book.get("chapters", [])
             for chapter_index, verses in enumerate(chapters, start=1):
                 for verse_index, text in enumerate(verses, start=1):
+                    # Skip omitted verses (empty placeholders from convert_source
+                    # gap-filling): the DB carries no row, but verse_index keeps
+                    # later verses at their true numbers (e.g. WEB Luke 17:37).
+                    if text == "":
+                        continue
                     conn.execute(
                         "INSERT INTO verses (translation_id, book, chapter, verse, text) "
                         "VALUES (?, ?, ?, ?, ?)",

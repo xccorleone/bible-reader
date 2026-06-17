@@ -34,6 +34,7 @@ def convert(src_path: str, out_path: str) -> None:
         raise SystemExit(f"Expected books numbered 1..66 with no gaps, got {nrs}")
 
     out = []
+    gaps = []
     for b in books:
         chapters = sorted(b["chapters"], key=lambda c: c["chapter"])
         if [c["chapter"] for c in chapters] != list(range(1, len(chapters) + 1)):
@@ -41,16 +42,26 @@ def convert(src_path: str, out_path: str) -> None:
         out_chapters = []
         for c in chapters:
             verses = sorted(c["verses"], key=lambda v: v["verse"])
-            if [v["verse"] for v in verses] != list(range(1, len(verses) + 1)):
-                raise SystemExit(f"Verse gap in book {b['nr']} chapter {c['chapter']}")
-            out_chapters.append([clean(v["text"]) for v in verses])
+            by_num = {v["verse"]: clean(v["text"]) for v in verses}
+            last = verses[-1]["verse"]
+            # Some translations omit verses (textual variants, e.g. WEB Luke
+            # 17:36). Keep array position == verse number by filling gaps with
+            # "". build_bible_db skips empty verses, so the DB carries no phantom
+            # row and verse numbers stay aligned across translations (the app
+            # renders a missing parallel verse as "—").
+            missing = [n for n in range(1, last + 1) if n not in by_num]
+            if missing:
+                gaps.append((b["nr"], c["chapter"], missing))
+            out_chapters.append([by_num.get(n, "") for n in range(1, last + 1)])
         out.append({"abbrev": clean(b["name"]), "chapters": out_chapters})
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False)
 
     total = sum(len(ch) for bk in out for ch in bk["chapters"])
-    print(f"Wrote {out_path}: {len(out)} books, {total} verses")
+    print(f"Wrote {out_path}: {len(out)} books, {total} verse slots")
+    if gaps:
+        print(f"Filled {sum(len(m) for _, _, m in gaps)} omitted-verse gap(s): {gaps}")
 
 
 if __name__ == "__main__":

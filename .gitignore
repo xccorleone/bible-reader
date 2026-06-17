@@ -1,5 +1,8 @@
 tools/source_*.json
-tools/raw_download.json
+tools/raw_*.json
+# Built translation DBs are hosted as GitHub Release assets, never committed
+# (the bundled bible-reader/bible.sqlite is the only in-repo DB).
+tools/*.sqlite
 
 # Xcode
 *.xcuserstate
