@@ -3,6 +3,9 @@ import SwiftData
 
 struct ReadingView: View {
     let store: BibleStore
+    /// Optional parallel translation. When set, each verse shows this
+    /// translation's text beneath the primary line.
+    var secondaryStore: BibleStore? = nil
     let book: BookInfo
     let chapter: Int
 
@@ -10,6 +13,7 @@ struct ReadingView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var verses: [Verse] = []
+    @State private var rows: [ParallelRow] = []
     @State private var loadError: String?
 
     // Annotations for this chapter, loaded once and refreshed on change.
@@ -30,16 +34,18 @@ struct ReadingView: View {
                 if let loadError {
                     Text(loadError).foregroundStyle(.red)
                 }
-                ForEach(verses) { verse in
+                ForEach(rows) { row in
                     VerseRow(
-                        verse: verse,
+                        verse: Verse(number: row.number, text: row.primary),
                         fontSize: settings.fontSize,
-                        highlightHex: highlightHexByVerse[verse.number],
-                        isBookmarked: bookmarkedVerses.contains(verse.number),
-                        hasNote: notesByVerse[verse.number] != nil,
-                        isSelected: selectedVerses.contains(verse.number),
-                        onTap: { toggleSelection(verse.number) },
-                        onTapNote: { editingNote = EditingNote(verse: verse.number) }
+                        highlightHex: highlightHexByVerse[row.number],
+                        isBookmarked: bookmarkedVerses.contains(row.number),
+                        hasNote: notesByVerse[row.number] != nil,
+                        secondaryText: row.secondary,
+                        isParallel: secondaryStore != nil,
+                        isSelected: selectedVerses.contains(row.number),
+                        onTap: { toggleSelection(row.number) },
+                        onTapNote: { editingNote = EditingNote(verse: row.number) }
                     )
                 }
             }
@@ -115,6 +121,8 @@ struct ReadingView: View {
         loadError = nil
         do {
             verses = try store.verses(book: book.id, chapter: chapter)
+            let secondaryVerses = try secondaryStore?.verses(book: book.id, chapter: chapter)
+            rows = ParallelVerses.join(primary: verses, secondary: secondaryVerses)
             LastReadPosition.update(
                 in: modelContext, book: book.id, chapter: chapter, translationID: store.translationID)
             reloadAnnotations()
