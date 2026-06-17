@@ -1,2 +1,14 @@
 tools/source_*.json
 tools/raw_download.json
+
+# Xcode
+*.xcuserstate
+xcuserdata/
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Icon build output
+tools/icon/out/

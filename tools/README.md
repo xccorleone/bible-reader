@@ -38,11 +38,15 @@ To reproduce:
     python3 convert_source.py raw_download.json source_cuv.json
     python3 build_bible_db.py source_cuv.json ../bible-reader/bible.sqlite cuv
 
-> **FTS note:** `verses_fts` uses the default FTS5 `unicode61` tokenizer, which
-> does not segment runs of CJK characters. A bare single-character query like
-> `神` only matches verses where that character stands alone as a
-> whitespace-delimited token; use a prefix query (`神*`) for substring-style
-> matching (e.g. `神*` matches ~3,600 verses; 神 appears literally in ~4,000).
+> **FTS note:** `verses_fts` uses the FTS5 `trigram` tokenizer so Chinese
+> substring/phrase search works (the default `unicode61` tokenizer does not
+> segment CJK runs). The trigram index covers queries of **3 or more
+> characters**: `verses_fts MATCH '神创造'` and trigram-accelerated
+> `text LIKE '%神创造%'` both work and are fast. Queries **shorter than 3
+> characters** (e.g. `神`, `起初`) produce no trigrams, so `MATCH` returns
+> nothing and `LIKE` falls back to a full scan. For 1–2 character searches,
+> query the `verses` table directly with `text LIKE '%…%'` — a full scan over
+> 31,103 verses is only a few ms.
 
 Raw `source_*.json` / `raw_download.json` are gitignored; only the built
 `bible.sqlite` and the converter are committed.
