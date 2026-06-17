@@ -22,8 +22,10 @@ struct VerseRow: View {
             }
             (Text("\(verse.number) ")
                 .font(.system(size: fontSize * 0.7))
-                .foregroundStyle(.secondary)
-             + Text(verse.text).font(.system(size: fontSize)))
+                .foregroundStyle(highlightHex != nil ? Color.black.opacity(0.5) : Color.secondary)
+             + Text(verse.text)
+                .font(.system(size: fontSize))
+                .foregroundStyle(highlightHex != nil ? Color.black : Color.primary))
             if hasNote {
                 Button(action: onTapNote) {
                     Image(systemName: "note.text")
