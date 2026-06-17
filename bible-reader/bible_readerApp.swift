@@ -10,12 +10,11 @@ import SwiftData
 
 @main
 struct bible_readerApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    @State private var settings = ReadingSettings()
 
+    var sharedModelContainer: ModelContainer = {
+        let schema = Schema([LastReadPosition.self])
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
@@ -26,6 +25,8 @@ struct bible_readerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(settings)
+                .preferredColorScheme(settings.colorScheme.colorScheme)
         }
         .modelContainer(sharedModelContainer)
     }

@@ -8,73 +8,61 @@
 import SwiftUI
 import SwiftData
 
+/// Navigation destinations pushed onto the reading stack.
+enum NavRoute: Hashable {
+    case chapters(book: BookInfo)
+    case reading(book: BookInfo, chapter: Int)
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var positions: [LastReadPosition]
+
+    @State private var store: BibleStore?
+    @State private var fatalMessage: String?
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationViewWrapper {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        NavigationStack(path: $path) {
+            Group {
+                if let store {
+                    BookListView(store: store)
+                        .navigationDestination(for: NavRoute.self) { route in
+                            switch route {
+                            case let .chapters(book):
+                                ChapterListView(store: store, book: book)
+                            case let .reading(book, chapter):
+                                ReadingView(store: store, book: book, chapter: chapter)
+                            }
+                        }
+                        .toolbar {
+                            ToolbarItem(placement: .primaryAction) {
+                                NavigationLink { SettingsView() } label: {
+                                    Image(systemName: "textformat.size")
+                                }
+                            }
+                            if let last = positions.first,
+                               let book = try? store.allBooks().first(where: { $0.id == last.book }) {
+                                ToolbarItem(placement: .navigation) {
+                                    Button("续读") {
+                                        path.append(NavRoute.reading(book: book, chapter: last.chapter))
+                                    }
+                                }
+                            }
+                        }
+                } else if let fatalMessage {
+                    ContentUnavailableView("无法打开圣经数据", systemImage: "exclamationmark.triangle", description: Text(fatalMessage))
+                } else {
+                    ProgressView()
                 }
-                .onDelete(perform: deleteItems)
-            }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
             }
         }
+        .task { openStore() }
     }
-}
 
-fileprivate struct NavigationViewWrapper<Content: View>: View {
-    let content: () -> Content
-
-    var body: some View {
-#if os(macOS)
-        NavigationSplitView {
-            content()
-        } detail: {
-            Text("Select an item")
-        }
-#else
-        content()
-#endif
+    private func openStore() {
+        guard store == nil else { return }
+        do { store = try BibleStore.bundled(translationID: "cuv") }
+        catch { fatalMessage = "请确认 bible.sqlite 已打包。(\(error))" }
     }
-}
-
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
