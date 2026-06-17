@@ -50,6 +50,16 @@ class BuildBibleDBTests(unittest.TestCase):
         ids = [r[0] for r in self.conn.execute("SELECT id FROM books ORDER BY id").fetchall()]
         self.assertEqual(ids, [1, 2])  # only the two fixture books have verses
 
+    def test_fts_matches_chinese_phrase(self):
+        # A multi-character Chinese phrase must match via FTS5. The default
+        # unicode61 tokenizer does not segment CJK runs, so this requires the
+        # trigram tokenizer.
+        rows = self.conn.execute(
+            "SELECT book, chapter, verse FROM verses_fts WHERE verses_fts MATCH ?",
+            ("神创造",),
+        ).fetchall()
+        self.assertIn((1, 1, 1), rows)  # 起初神创造天地。
+
 
 if __name__ == "__main__":
     unittest.main()

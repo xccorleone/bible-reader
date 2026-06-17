@@ -35,7 +35,8 @@ CREATE VIRTUAL TABLE verses_fts USING fts5(
     translation_id UNINDEXED,
     book UNINDEXED,
     chapter UNINDEXED,
-    verse UNINDEXED
+    verse UNINDEXED,
+    tokenize='trigram'
 );
 """
 
