@@ -22,17 +22,34 @@ enum AppColorScheme: String, CaseIterable, Identifiable {
 /// Observable reading preferences, persisted via UserDefaults.
 @Observable
 final class ReadingSettings {
+    @ObservationIgnored private let defaults: UserDefaults
+
     var fontSize: Double {
-        didSet { UserDefaults.standard.set(fontSize, forKey: "fontSize") }
+        didSet { defaults.set(fontSize, forKey: "fontSize") }
     }
     var colorScheme: AppColorScheme {
-        didSet { UserDefaults.standard.set(colorScheme.rawValue, forKey: "colorScheme") }
+        didSet { defaults.set(colorScheme.rawValue, forKey: "colorScheme") }
+    }
+    var primaryTranslationID: String {
+        didSet { defaults.set(primaryTranslationID, forKey: "primaryTranslationID") }
+    }
+    var secondaryTranslationID: String? {
+        didSet {
+            if let v = secondaryTranslationID {
+                defaults.set(v, forKey: "secondaryTranslationID")
+            } else {
+                defaults.removeObject(forKey: "secondaryTranslationID")
+            }
+        }
     }
 
-    init() {
-        let stored = UserDefaults.standard.double(forKey: "fontSize")
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        let stored = defaults.double(forKey: "fontSize")
         self.fontSize = stored == 0 ? 18 : stored
-        let raw = UserDefaults.standard.string(forKey: "colorScheme") ?? AppColorScheme.system.rawValue
+        let raw = defaults.string(forKey: "colorScheme") ?? AppColorScheme.system.rawValue
         self.colorScheme = AppColorScheme(rawValue: raw) ?? .system
+        self.primaryTranslationID = defaults.string(forKey: "primaryTranslationID") ?? "cuv"
+        self.secondaryTranslationID = defaults.string(forKey: "secondaryTranslationID")
     }
 }
