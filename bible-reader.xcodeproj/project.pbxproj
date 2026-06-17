@@ -18,11 +18,19 @@
 			remoteGlobalIDString = 3DD183DE2FE22AEF00500B93;
 			remoteInfo = "bible-reader";
 		};
+		3DD184482FE2378F00500B93 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3DD183D72FE22AEF00500B93 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3DD183DE2FE22AEF00500B93;
+			remoteInfo = "bible-reader";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		3DD183DF2FE22AEF00500B93 /* bible-reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "bible-reader.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DD183FC2FE2353400500B93 /* bible-readerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "bible-readerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3DD184442FE2378F00500B93 /* bible-readerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "bible-readerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,9 +39,9 @@
 			path = "bible-reader";
 			sourceTree = "<group>";
 		};
-		3DD183FD2FE2353400500B93 /* bible-readerUITests */ = {
+		3DD184452FE2378F00500B93 /* bible-readerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "bible-readerUITests";
+			path = "bible-readerTests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -54,6 +62,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3DD184412FE2378F00500B93 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -61,7 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				3DD183E12FE22AEF00500B93 /* bible-reader */,
-				3DD183FD2FE2353400500B93 /* bible-readerUITests */,
+				3DD184452FE2378F00500B93 /* bible-readerTests */,
 				3DD183E02FE22AEF00500B93 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -71,6 +86,7 @@
 			children = (
 				3DD183DF2FE22AEF00500B93 /* bible-reader.app */,
 				3DD183FC2FE2353400500B93 /* bible-readerUITests.xctest */,
+				3DD184442FE2378F00500B93 /* bible-readerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -114,15 +130,35 @@
 			dependencies = (
 				3DD184032FE2353400500B93 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				3DD183FD2FE2353400500B93 /* bible-readerUITests */,
-			);
 			name = "bible-readerUITests";
 			packageProductDependencies = (
 			);
 			productName = "bible-readerUITests";
 			productReference = 3DD183FC2FE2353400500B93 /* bible-readerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		3DD184432FE2378F00500B93 /* bible-readerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3DD1844A2FE2378F00500B93 /* Build configuration list for PBXNativeTarget "bible-readerTests" */;
+			buildPhases = (
+				3DD184402FE2378F00500B93 /* Sources */,
+				3DD184412FE2378F00500B93 /* Frameworks */,
+				3DD184422FE2378F00500B93 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3DD184492FE2378F00500B93 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3DD184452FE2378F00500B93 /* bible-readerTests */,
+			);
+			name = "bible-readerTests";
+			packageProductDependencies = (
+			);
+			productName = "bible-readerTests";
+			productReference = 3DD184442FE2378F00500B93 /* bible-readerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -138,6 +174,10 @@
 						CreatedOnToolsVersion = 26.5;
 					};
 					3DD183FB2FE2353400500B93 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 3DD183DE2FE22AEF00500B93;
+					};
+					3DD184432FE2378F00500B93 = {
 						CreatedOnToolsVersion = 26.5;
 						TestTargetID = 3DD183DE2FE22AEF00500B93;
 					};
@@ -162,6 +202,7 @@
 			targets = (
 				3DD183DE2FE22AEF00500B93 /* bible-reader */,
 				3DD183FB2FE2353400500B93 /* bible-readerUITests */,
+				3DD184432FE2378F00500B93 /* bible-readerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -175,6 +216,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3DD183FA2FE2353400500B93 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3DD184422FE2378F00500B93 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -198,6 +246,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3DD184402FE2378F00500B93 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -205,6 +260,11 @@
 			isa = PBXTargetDependency;
 			target = 3DD183DE2FE22AEF00500B93 /* bible-reader */;
 			targetProxy = 3DD184022FE2353400500B93 /* PBXContainerItemProxy */;
+		};
+		3DD184492FE2378F00500B93 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3DD183DE2FE22AEF00500B93 /* bible-reader */;
+			targetProxy = 3DD184482FE2378F00500B93 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -455,6 +515,54 @@
 			};
 			name = Release;
 		};
+		3DD1844B2FE2378F00500B93 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U632YJ4F85;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.corleone.bible-readerTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bible-reader.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/bible-reader";
+			};
+			name = Debug;
+		};
+		3DD1844C2FE2378F00500B93 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U632YJ4F85;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.corleone.bible-readerTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/bible-reader.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/bible-reader";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -481,6 +589,15 @@
 			buildConfigurations = (
 				3DD184052FE2353400500B93 /* Debug */,
 				3DD184062FE2353400500B93 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3DD1844A2FE2378F00500B93 /* Build configuration list for PBXNativeTarget "bible-readerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3DD1844B2FE2378F00500B93 /* Debug */,
+				3DD1844C2FE2378F00500B93 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
