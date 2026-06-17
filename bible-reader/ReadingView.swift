@@ -111,6 +111,8 @@ struct ReadingView: View {
     }
 
     private func load() {
+        selectedVerses.removeAll()
+        loadError = nil
         do {
             verses = try store.verses(book: book.id, chapter: chapter)
             LastReadPosition.update(
