@@ -139,17 +139,26 @@ struct ContentView: View {
         do {
             let opened = try BibleStore.bundled(translationID: "cuv")
             books = try opened.allBooks()
-            let support = try FileManager.default.url(
-                for: .applicationSupportDirectory, in: .userDomainMask,
-                appropriateFor: nil, create: true)
-            let dir = support.appending(path: "Translations")
-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             translationManager = TranslationManager(
                 bundledStore: opened, downloader: URLSessionDownloader(),
-                directory: dir, manifestURL: translationManifestURL)
+                directory: translationsDirectory(), manifestURL: translationManifestURL)
             store = opened
         } catch {
             fatalMessage = "请确认 bible.sqlite 已打包。(\(error))"
         }
+    }
+
+    /// Directory for downloaded translation databases. Only needed for the
+    /// download feature, so a filesystem error here must NOT block reading the
+    /// bundled translation — fall back to a temporary directory.
+    private func translationsDirectory() -> URL {
+        if let support = try? FileManager.default.url(
+            for: .applicationSupportDirectory, in: .userDomainMask,
+            appropriateFor: nil, create: true) {
+            let dir = support.appending(path: "Translations")
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            return dir
+        }
+        return URL.temporaryDirectory.appending(path: "Translations")
     }
 }
