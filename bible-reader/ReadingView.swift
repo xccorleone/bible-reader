@@ -28,6 +28,12 @@ struct ReadingView: View {
     /// Identifiable wrapper so a verse number can drive `.sheet(item:)`.
     private struct EditingNote: Identifiable { let verse: Int; var id: Int { verse } }
 
+    /// Re-runs `load()` when the chapter or either translation changes, so
+    /// switching the primary/secondary translation refreshes the page in place.
+    private var reloadKey: String {
+        "\(chapter)|\(store.translationID)|\(secondaryStore?.translationID ?? "")"
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
@@ -67,7 +73,7 @@ struct ReadingView: View {
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
 #endif
-        .task(id: chapter) { load() }
+        .task(id: reloadKey) { load() }
         .sheet(item: $editingNote) { editing in
             let ref = Reference(book: book.id, chapter: chapter, verse: editing.verse)
             NoteEditorView(
