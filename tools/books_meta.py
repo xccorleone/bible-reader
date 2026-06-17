@@ -35,3 +35,19 @@ BOOKS = [
 def testament(book_number: int) -> str:
     """Books 1–39 are Old Testament, 40–66 New Testament."""
     return "OT" if book_number <= 39 else "NT"
+
+
+# Common abbreviation → book number mapping (lowercase).
+ABBREV_TO_NUMBER: dict[str, int] = {
+    "gn": 1, "ex": 2, "lv": 3, "nm": 4, "dt": 5, "jos": 6, "jdg": 7, "ru": 8,
+    "1sm": 9, "2sm": 10, "1kgs": 11, "2kgs": 12, "1chr": 13, "2chr": 14,
+    "ezr": 15, "neh": 16, "est": 17, "job": 18, "ps": 19, "prv": 20, "eccl": 21,
+    "sg": 22, "is": 23, "jer": 24, "lam": 25, "ez": 26, "dn": 27, "hos": 28,
+    "jl": 29, "am": 30, "ob": 31, "jon": 32, "mi": 33, "na": 34, "hb": 35,
+    "zep": 36, "hg": 37, "zec": 38, "mal": 39,
+    "mt": 40, "mk": 41, "lk": 42, "jn": 43, "acts": 44, "rom": 45,
+    "1cor": 46, "2cor": 47, "gal": 48, "eph": 49, "phil": 50, "col": 51,
+    "1thes": 52, "2thes": 53, "1tm": 54, "2tm": 55, "tit": 56, "phlm": 57,
+    "heb": 58, "jas": 59, "1pt": 60, "2pt": 61, "1jn": 62, "2jn": 63,
+    "3jn": 64, "jude": 65, "rv": 66,
+}

@@ -1,0 +1,44 @@
+# tools/test_build_bible_db.py
+import os
+import sqlite3
+import tempfile
+import unittest
+
+import build_bible_db
+
+
+FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "sample_bible.json")
+
+
+class BuildBibleDBTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False)
+        self.tmp.close()
+        self.db_path = self.tmp.name
+        build_bible_db.build(FIXTURE, self.db_path, translation_id="cuv")
+        self.conn = sqlite3.connect(self.db_path)
+
+    def tearDown(self):
+        self.conn.close()
+        os.unlink(self.db_path)
+
+    def test_verse_count(self):
+        n = self.conn.execute("SELECT COUNT(*) FROM verses").fetchone()[0]
+        self.assertEqual(n, 6)  # 3 + 1 + 2 verses in the fixture
+
+    def test_fetch_specific_verse(self):
+        row = self.conn.execute(
+            "SELECT text FROM verses WHERE translation_id=? AND book=? AND chapter=? AND verse=?",
+            ("cuv", 1, 1, 1),
+        ).fetchone()
+        self.assertEqual(row[0], "起初神创造天地。")
+
+    def test_john_is_book_43(self):
+        row = self.conn.execute(
+            "SELECT text FROM verses WHERE book=43 AND chapter=1 AND verse=1"
+        ).fetchone()
+        self.assertEqual(row[0], "太初有道，道与神同在，道就是神。")
+
+
+if __name__ == "__main__":
+    unittest.main()
