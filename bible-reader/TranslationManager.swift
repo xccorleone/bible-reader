@@ -1,6 +1,10 @@
 import Foundation
 import Observation
 
+enum TranslationInstallError: Error, Equatable {
+    case checksumMismatch
+}
+
 /// Registry of available Bible translations: the built-in `cuv` plus any the
 /// user has downloaded into `directory`. Network access goes through the
 /// injected `Downloader` so it can be exercised without the network.
@@ -37,6 +41,29 @@ final class TranslationManager {
 
     func store(for id: String) -> BibleStore? {
         installed.first { $0.id == id }?.store
+    }
+
+    /// Downloads, verifies the SHA-256 against the manifest, then atomically
+    /// moves the file into `directory`. Leaves no partial file on failure.
+    func install(_ remote: RemoteTranslation) async throws {
+        downloadProgress[remote.id] = 0
+        defer { downloadProgress[remote.id] = nil }
+
+        let tempFile = try await downloader.downloadToFile(from: remote.url) { [weak self] fraction in
+            Task { @MainActor in self?.downloadProgress[remote.id] = fraction }
+        }
+        let actual = try sha256(ofFileAt: tempFile)
+        guard actual == remote.sha256 else {
+            try? FileManager.default.removeItem(at: tempFile)
+            throw TranslationInstallError.checksumMismatch
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let dest = directory.appending(path: "\(remote.id).sqlite")
+        if FileManager.default.fileExists(atPath: dest.path) {
+            try FileManager.default.removeItem(at: dest)
+        }
+        try FileManager.default.moveItem(at: tempFile, to: dest)
+        refreshInstalled()
     }
 
     /// Rebuilds `installed` from the built-in store plus every `<id>.sqlite`

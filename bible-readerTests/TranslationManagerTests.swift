@@ -66,4 +66,39 @@ struct TranslationManagerTests {
         #expect(mgr.installed.contains { $0.id == "kjv" && !$0.isBuiltIn })
         #expect(mgr.store(for: "kjv") != nil)
     }
+
+    @Test func installVerifiesChecksumAndAppears() async throws {
+        let dir = try tempDir()
+        let srcDir = try tempDir()
+        let (file, hash, bytes) = try makeTranslationFile(id: "kjv", dir: srcDir, text: "In the beginning")
+        let stub = StubDownloader()
+        stub.fileToReturn = file
+        let mgr = try makeManager(dir: dir, downloader: stub)
+        let remote = RemoteTranslation(id: "kjv", nameZH: "英王钦定本", nameEN: "KJV",
+            abbrev: "KJV", language: "en", url: file, bytes: bytes, sha256: hash)
+
+        try await mgr.install(remote)
+
+        #expect(mgr.installed.contains { $0.id == "kjv" })
+        #expect(FileManager.default.fileExists(atPath: dir.appending(path: "kjv.sqlite").path))
+        let verses = try #require(mgr.store(for: "kjv")).verses(book: 1, chapter: 1)
+        #expect(verses.first?.text == "In the beginning")
+    }
+
+    @Test func installRejectsTamperedChecksum() async throws {
+        let dir = try tempDir()
+        let srcDir = try tempDir()
+        let (file, _, bytes) = try makeTranslationFile(id: "kjv", dir: srcDir, text: "tampered")
+        let stub = StubDownloader()
+        stub.fileToReturn = file
+        let mgr = try makeManager(dir: dir, downloader: stub)
+        let remote = RemoteTranslation(id: "kjv", nameZH: "x", nameEN: "x", abbrev: "x",
+            language: "en", url: file, bytes: bytes, sha256: "deadbeef")  // wrong hash
+
+        await #expect(throws: TranslationInstallError.checksumMismatch) {
+            try await mgr.install(remote)
+        }
+        #expect(!FileManager.default.fileExists(atPath: dir.appending(path: "kjv.sqlite").path))
+        #expect(!mgr.installed.contains { $0.id == "kjv" })
+    }
 }
