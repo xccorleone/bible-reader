@@ -16,9 +16,10 @@ enum NavRoute: Hashable {
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var positions: [LastReadPosition]
+    @Query(sort: \LastReadPosition.updatedAt, order: .reverse) private var positions: [LastReadPosition]
 
     @State private var store: BibleStore?
+    @State private var books: [BookInfo] = []
     @State private var fatalMessage: String?
     @State private var path = NavigationPath()
 
@@ -26,7 +27,7 @@ struct ContentView: View {
         NavigationStack(path: $path) {
             Group {
                 if let store {
-                    BookListView(store: store)
+                    BookListView(books: books)
                         .navigationDestination(for: NavRoute.self) { route in
                             switch route {
                             case let .chapters(book):
@@ -42,7 +43,7 @@ struct ContentView: View {
                                 }
                             }
                             if let last = positions.first,
-                               let book = try? store.allBooks().first(where: { $0.id == last.book }) {
+                               let book = books.first(where: { $0.id == last.book }) {
                                 ToolbarItem(placement: .navigation) {
                                     Button("续读") {
                                         path.append(NavRoute.reading(book: book, chapter: last.chapter))
@@ -62,7 +63,12 @@ struct ContentView: View {
 
     private func openStore() {
         guard store == nil else { return }
-        do { store = try BibleStore.bundled(translationID: "cuv") }
-        catch { fatalMessage = "请确认 bible.sqlite 已打包。(\(error))" }
+        do {
+            let opened = try BibleStore.bundled(translationID: "cuv")
+            books = try opened.allBooks()
+            store = opened
+        } catch {
+            fatalMessage = "请确认 bible.sqlite 已打包。(\(error))"
+        }
     }
 }

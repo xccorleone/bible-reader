@@ -43,15 +43,7 @@ struct ReadingView: View {
     }
 
     private func savePosition() {
-        let descriptor = FetchDescriptor<LastReadPosition>()
-        if let existing = try? modelContext.fetch(descriptor).first {
-            existing.book = book.id
-            existing.chapter = chapter
-            existing.translationID = store.translationID
-            existing.updatedAt = .now
-        } else {
-            modelContext.insert(LastReadPosition(
-                book: book.id, chapter: chapter, translationID: store.translationID))
-        }
+        LastReadPosition.update(
+            in: modelContext, book: book.id, chapter: chapter, translationID: store.translationID)
     }
 }
