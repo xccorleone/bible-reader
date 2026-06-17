@@ -42,11 +42,11 @@ struct FocusSettingsView: View {
                     Text("连续达标 \(focus.currentStreak()) 天")
                         .foregroundStyle(.secondary)
                 }
-                if authDenied {
-                    Section {
-                        Text("未获授权,当前仅计时不屏蔽。请在系统「设置 → 屏幕使用时间」中允许本 App。")
-                            .foregroundStyle(.secondary)
-                    }
+            }
+            if authDenied {
+                Section {
+                    Text("未获授权,当前仅计时不屏蔽。请在系统「设置 → 屏幕使用时间」中允许本 App。")
+                        .foregroundStyle(.secondary)
                 }
             }
         }

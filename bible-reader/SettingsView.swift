@@ -3,7 +3,6 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(ReadingSettings.self) private var settings
     let translationManager: TranslationManager
-    @Environment(FocusCoordinator.self) private var focus
 
     var body: some View {
         @Bindable var settings = settings
