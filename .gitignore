@@ -8,6 +8,9 @@ tools/*.sqlite
 *.xcuserstate
 xcuserdata/
 .DS_Store
+*.xcresult
+# Stray compiled scratch binary (build-script artifact, never a source file)
+/main
 
 # Python
 __pycache__/

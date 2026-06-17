@@ -11,6 +11,9 @@ struct ReadingView: View {
 
     @Environment(ReadingSettings.self) private var settings
     @Environment(\.modelContext) private var modelContext
+    @Environment(FocusCoordinator.self) private var focus
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var timer = ReadingTimer()
 
     @State private var verses: [Verse] = []
     @State private var rows: [ParallelRow] = []
@@ -74,6 +77,19 @@ struct ReadingView: View {
         .navigationBarTitleDisplayMode(.inline)
 #endif
         .task(id: reloadKey) { load() }
+        .onAppear { timer.resume() }
+        .onDisappear { flushReadingTime(); timer.pause() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { timer.resume() }
+            else { flushReadingTime(); timer.pause() }
+        }
+        .task {
+            // Flush accrued reading time every 5s while this view is alive.
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(5))
+                flushReadingTime()
+            }
+        }
         .sheet(item: $editingNote) { editing in
             let ref = Reference(book: book.id, chapter: chapter, verse: editing.verse)
             NoteEditorView(
@@ -135,6 +151,11 @@ struct ReadingView: View {
         } catch {
             loadError = "无法加载经文：\(error.localizedDescription)"
         }
+    }
+
+    private func flushReadingTime() {
+        let seconds = timer.drain()
+        if seconds > 0 { focus.recordReading(seconds: seconds) }
     }
 
     private func reloadAnnotations() {

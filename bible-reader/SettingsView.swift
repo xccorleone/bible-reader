@@ -24,6 +24,11 @@ struct SettingsView: View {
                     TranslationsView(manager: translationManager)
                 }
             }
+            Section("专注") {
+                NavigationLink("专注锁定") {
+                    FocusSettingsView()
+                }
+            }
         }
         .navigationTitle("设置")
     }
