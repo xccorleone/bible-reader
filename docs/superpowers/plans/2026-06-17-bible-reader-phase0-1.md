@@ -119,11 +119,13 @@ The build script consumes a JSON array of 66 books, each `{"abbrev": str, "chapt
       ["起初神创造天地。", "地是空虚混沌，渊面黑暗；神的灵运行在水面上。", "神说：要有光，就有了光。"],
       ["天地万物都造齐了。"]
   ]},
-  { "abbrev": "jn", "chapters": [
-      ["太初有道，道与神同在，道就是神。", "这道太初与神同在。"]
+  { "abbrev": "ex", "chapters": [
+      ["以色列的众子，各带家眷，和雅各一同来到埃及。", "有约瑟和他的弟兄。"]
   ]}
 ]
 ```
+
+> **Numbering rule:** array position = book number (1-based). The source must list books in canonical Genesis→Revelation order; `abbrev` is not used for numbering. The fixture's two books therefore become book 1 (Genesis) and book 2 (Exodus).
 
 - [ ] **Step 2: Commit**
 
@@ -178,11 +180,12 @@ class BuildBibleDBTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(row[0], "起初神创造天地。")
 
-    def test_john_is_book_43(self):
+    def test_book_number_follows_array_position(self):
+        # The second book in the source array becomes book 2.
         row = self.conn.execute(
-            "SELECT text FROM verses WHERE book=43 AND chapter=1 AND verse=1"
+            "SELECT text FROM verses WHERE book=2 AND chapter=1 AND verse=1"
         ).fetchone()
-        self.assertEqual(row[0], "太初有道，道与神同在，道就是神。")
+        self.assertEqual(row[0], "以色列的众子，各带家眷，和雅各一同来到埃及。")
 
 
 if __name__ == "__main__":
@@ -323,7 +326,7 @@ Append this method inside the `BuildBibleDBTests` class:
 
     def test_only_present_books_in_metadata(self):
         ids = [r[0] for r in self.conn.execute("SELECT id FROM books ORDER BY id").fetchall()]
-        self.assertEqual(ids, [1, 43])  # only Genesis & John have verses in the fixture
+        self.assertEqual(ids, [1, 2])  # only the two fixture books have verses
 ```
 
 - [ ] **Step 2: Run the tests**
