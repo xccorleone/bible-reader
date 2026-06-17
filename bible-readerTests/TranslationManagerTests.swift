@@ -156,4 +156,16 @@ struct TranslationManagerTests {
         #expect(mgr.catalogError != nil)
         #expect(mgr.available.isEmpty)
     }
+
+    @Test func fetchCatalogRejectsUnsupportedSchema() async throws {
+        let dir = try tempDir()
+        let stub = StubDownloader()
+        stub.manifestData = Data(#"{ "schemaVersion": 99, "translations": [] }"#.utf8)
+        let mgr = try makeManager(dir: dir, downloader: stub)
+
+        await mgr.fetchCatalog()
+
+        #expect(mgr.catalogError?.contains("需要更新 App") == true)
+        #expect(mgr.available.isEmpty)
+    }
 }
