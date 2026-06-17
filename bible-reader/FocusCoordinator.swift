@@ -45,6 +45,10 @@ final class FocusCoordinator {
         let plan = self.plan
         guard plan.isEnabled else { lock.removeShield(); return }
         let session = todaySession
+        // Self-heal completion: a lowered target can complete today retroactively.
+        if !session.isComplete && session.accumulatedSeconds >= Double(plan.dailyTargetMinutes * 60) {
+            session.isComplete = true
+        }
         if session.isComplete {
             lock.removeShield()
         } else {

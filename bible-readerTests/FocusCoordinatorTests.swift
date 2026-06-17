@@ -85,4 +85,21 @@ struct FocusCoordinatorTests {
         #expect(lock.requestCalled == true)
         #expect(coord.plan.isEnabled == true)
     }
+
+    @Test func loweringTargetBelowReadCompletesAndStaysUnlocked() throws {
+        let context = try makeContext()
+        let lock = FakeLock()
+        let clock = Clock()
+        let coord = FocusCoordinator(context: context, lock: lock, now: { clock.t }, calendar: utc)
+        coord.setTarget(minutes: 10)            // 600s target
+        coord.setSelection(data: Data([5]))
+        coord.setEnabled(true)
+        coord.recordReading(seconds: 120)       // 2 min < 10 → still shielded
+        #expect(lock.shielded == true)
+        coord.setTarget(minutes: 1)             // 120s ≥ 60 → completes today
+        #expect(coord.todayProgress().isComplete == true)
+        #expect(lock.shielded == false)
+        coord.reconcile()                       // a later foreground must NOT re-shield
+        #expect(lock.shielded == false)
+    }
 }
