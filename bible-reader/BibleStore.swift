@@ -17,6 +17,14 @@ struct BibleStore {
         return BibleStore(dbQueue: queue, translationID: translationID)
     }
 
+    /// Opens a downloaded translation database read-only from an absolute path.
+    static func file(at path: String, translationID: String) throws -> BibleStore {
+        var config = Configuration()
+        config.readonly = true
+        let queue = try DatabaseQueue(path: path, configuration: config)
+        return BibleStore(dbQueue: queue, translationID: translationID)
+    }
+
     func allBooks() throws -> [BookInfo] {
         try dbQueue.read { db in
             try Row.fetchAll(db, sql: """
@@ -54,6 +62,14 @@ extension BibleStore {
         let queue = try DatabaseQueue()
         try queue.write { db in try db.execute(sql: seedSQL) }
         return BibleStore(dbQueue: queue, translationID: translationID)
+    }
+
+    /// Writes the in-memory database to a file path using `VACUUM INTO`.
+    /// Test-only helper so callers don't need to import GRDB directly.
+    func vacuum(into path: String) throws {
+        try dbQueue.writeWithoutTransaction { db in
+            try db.execute(sql: "VACUUM INTO ?", arguments: [path])
+        }
     }
 }
 #endif

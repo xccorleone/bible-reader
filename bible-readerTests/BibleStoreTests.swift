@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import bible_reader
 
@@ -52,5 +53,24 @@ struct BibleStoreTests {
         let genesis1 = try store.verses(book: 1, chapter: 1)
         #expect(genesis1.count >= 31)                              // Genesis 1 has 31 verses
         #expect(genesis1.first?.text.contains("起初") == true)
+    }
+
+    @Test func opensTranslationFromFilePath() throws {
+        // Build a real on-disk DB with a second translation, then reopen read-only.
+        let dir = URL.temporaryDirectory.appending(path: "store-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let path = dir.appending(path: "kjv.sqlite").path
+
+        let seed = try BibleStore.inMemory(seedSQL: """
+            CREATE TABLE verses (translation_id TEXT, book INTEGER, chapter INTEGER,
+                verse INTEGER, text TEXT,
+                PRIMARY KEY(translation_id, book, chapter, verse));
+            INSERT INTO verses VALUES ('kjv',1,1,1,'In the beginning God created the heaven and the earth.');
+            """, translationID: "kjv")
+        try seed.vacuum(into: path)
+
+        let store = try BibleStore.file(at: path, translationID: "kjv")
+        let verses = try store.verses(book: 1, chapter: 1)
+        #expect(verses == [Verse(number: 1, text: "In the beginning God created the heaven and the earth.")])
     }
 }
