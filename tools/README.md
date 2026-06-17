@@ -50,3 +50,28 @@ To reproduce:
 
 Raw `source_*.json` / `raw_download.json` are gitignored; only the built
 `bible.sqlite` and the converter are committed.
+
+## Downloadable translations (Phase 4)
+
+Build standalone per-translation databases with the same tool, then generate
+the manifest:
+
+    # Sources from getbible.net v2 (public domain): kjv, web
+    curl -sL -o raw_kjv.json https://api.getbible.net/v2/kjv.json
+    python3 convert_source.py raw_kjv.json source_kjv.json   # if conversion needed
+    python3 build_bible_db.py source_kjv.json kjv.sqlite kjv
+    python3 build_bible_db.py source_web.json web.sqlite web
+
+    # base_url = the GitHub Release asset download prefix
+    python3 build_manifest.py \
+      https://github.com/OWNER/REPO/releases/download/translations-v1 \
+      ../translations/manifest.json
+
+### Provenance & license
+- **KJV** — King James Version (1611). Public domain. Source: getbible.net v2 `kjv`.
+- **WEB** — World English Bible. Public domain (explicitly released). Source: getbible.net v2 `web`.
+
+### Deploy
+1. Create a GitHub Release tagged `translations-v1`; upload `kjv.sqlite`, `web.sqlite` as assets.
+2. Commit `translations/manifest.json` (served via raw.githubusercontent.com).
+3. Set `translationManifestURL` in `ContentView.swift` to that raw URL.
