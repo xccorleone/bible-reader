@@ -18,14 +18,17 @@ enum TranslationManifestError: Error, Equatable {
 
 /// The catalog of downloadable translations, decoded from `manifest.json`.
 struct TranslationManifest: Codable {
-    static let supportedSchemaVersion = 1
+    private static let supportedSchemaVersion = 1
 
     let schemaVersion: Int
     let translations: [RemoteTranslation]
 
     static func decode(_ data: Data) throws -> TranslationManifest {
         let manifest = try JSONDecoder().decode(TranslationManifest.self, from: data)
-        guard manifest.schemaVersion == supportedSchemaVersion else {
+        // Reject only schemas newer than we understand; a newer manifest means
+        // the app needs updating. Manifest JSON keys are camelCase, matching the
+        // property names exactly (no key-decoding strategy needed).
+        guard manifest.schemaVersion <= supportedSchemaVersion else {
             throw TranslationManifestError.unsupportedSchema
         }
         return manifest

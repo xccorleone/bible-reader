@@ -17,6 +17,8 @@ struct TranslationManifestTests {
         let t = try #require(manifest.translations.first)
         #expect(t.id == "kjv")
         #expect(t.nameZH == "英王钦定本")
+        #expect(t.nameEN == "King James Version")
+        #expect(t.language == "en")
         #expect(t.abbrev == "KJV")
         #expect(t.bytes == 4500000)
         #expect(t.sha256 == "abc123")
