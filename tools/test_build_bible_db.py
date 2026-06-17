@@ -39,6 +39,16 @@ class BuildBibleDBTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(row[0], "太初有道，道与神同在，道就是神。")
 
+    def test_book_metadata_derived(self):
+        row = self.conn.execute(
+            "SELECT name_zh, name_en, testament, chapter_count FROM books WHERE id=1"
+        ).fetchone()
+        self.assertEqual(row, ("创世记", "Genesis", "OT", 2))  # fixture has 2 chapters in Genesis
+
+    def test_only_present_books_in_metadata(self):
+        ids = [r[0] for r in self.conn.execute("SELECT id FROM books ORDER BY id").fetchall()]
+        self.assertEqual(ids, [1, 43])  # only Genesis & John have verses in the fixture
+
 
 if __name__ == "__main__":
     unittest.main()
