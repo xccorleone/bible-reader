@@ -41,12 +41,17 @@ struct BibleStore {
 
     func verses(book: Int, chapter: Int) throws -> [Verse] {
         try dbQueue.read { db in
-            try Row.fetchAll(db, sql: """
-                SELECT verse, text FROM verses
+            // `para_start` is present in the bundled DB but absent from older
+            // downloaded translation databases — degrade gracefully there.
+            let hasPara = try db.columns(in: "verses").contains { $0.name == "para_start" }
+            let columns = hasPara ? "verse, text, para_start" : "verse, text"
+            return try Row.fetchAll(db, sql: """
+                SELECT \(columns) FROM verses
                 WHERE translation_id = ? AND book = ? AND chapter = ?
                 ORDER BY verse
             """, arguments: [translationID, book, chapter]).map { row in
-                Verse(number: row["verse"], text: row["text"])
+                Verse(number: row["verse"], text: row["text"],
+                      startsParagraph: hasPara && (row["para_start"] as Int? ?? 0) != 0)
             }
         }
     }

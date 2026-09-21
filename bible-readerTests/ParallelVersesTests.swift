@@ -26,4 +26,14 @@ struct ParallelVersesTests {
         let rows = ParallelVerses.join(primary: primary, secondary: nil)
         #expect(rows == [ParallelRow(number: 1, primary: "a", secondary: nil)])
     }
+
+    @Test func carriesParagraphStartFromPrimary() {
+        let primary = [
+            Verse(number: 1, text: "a", startsParagraph: true),
+            Verse(number: 2, text: "b", startsParagraph: false),
+            Verse(number: 3, text: "c", startsParagraph: true),
+        ]
+        let rows = ParallelVerses.join(primary: primary, secondary: nil)
+        #expect(rows.map(\.startsParagraph) == [true, false, true])
+    }
 }

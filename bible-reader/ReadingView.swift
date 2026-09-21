@@ -6,8 +6,22 @@ struct ReadingView: View {
     /// Optional parallel translation. When set, each verse shows this
     /// translation's text beneath the primary line.
     var secondaryStore: BibleStore? = nil
-    let book: BookInfo
-    let chapter: Int
+    /// Full book list (sorted), used to cross book boundaries when swiping.
+    let books: [BookInfo]
+
+    // Current position. Mutable so left/right swipes can page through chapters
+    // (and into adjacent books) in place.
+    @State private var book: BookInfo
+    @State private var chapter: Int
+
+    init(store: BibleStore, secondaryStore: BibleStore? = nil,
+         book: BookInfo, chapter: Int, books: [BookInfo] = []) {
+        self.store = store
+        self.secondaryStore = secondaryStore
+        self.books = books
+        _book = State(initialValue: book)
+        _chapter = State(initialValue: chapter)
+    }
 
     @Environment(ReadingSettings.self) private var settings
     @Environment(\.modelContext) private var modelContext
@@ -34,16 +48,16 @@ struct ReadingView: View {
     /// Re-runs `load()` when the chapter or either translation changes, so
     /// switching the primary/secondary translation refreshes the page in place.
     private var reloadKey: String {
-        "\(chapter)|\(store.translationID)|\(secondaryStore?.translationID ?? "")"
+        "\(book.id)|\(chapter)|\(store.translationID)|\(secondaryStore?.translationID ?? "")"
     }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 3) {
                 if let loadError {
                     Text(loadError).foregroundStyle(.red)
                 }
-                ForEach(rows) { row in
+                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     VerseRow(
                         verse: Verse(number: row.number, text: row.primary),
                         fontSize: settings.fontSize,
@@ -56,6 +70,9 @@ struct ReadingView: View {
                         onTap: { toggleSelection(row.number) },
                         onTapNote: { editingNote = EditingNote(verse: row.number) }
                     )
+                    // Open a gap before each new paragraph (分段), except the
+                    // chapter's first verse which needs no leading space.
+                    .padding(.top, row.startsParagraph && index > 0 ? 13 : 0)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,6 +93,18 @@ struct ReadingView: View {
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
 #endif
+        // Horizontal swipe pages chapters: left → next, right → previous.
+        // Runs alongside the ScrollView's vertical pan; we only act on a
+        // clearly horizontal drag so it never hijacks normal scrolling.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 24)
+                .onEnded { value in
+                    let dx = value.translation.width
+                    let dy = value.translation.height
+                    guard abs(dx) > 60, abs(dx) > abs(dy) * 1.5 else { return }
+                    move(by: dx < 0 ? 1 : -1)
+                }
+        )
         .task(id: reloadKey) { load() }
         .onAppear { timer.resume() }
         .onDisappear { flushReadingTime(); timer.pause() }
@@ -101,6 +130,25 @@ struct ReadingView: View {
                 reloadAnnotations()
                 selectedVerses.removeAll()
             }
+        }
+    }
+
+    /// Moves `delta` chapters, crossing into the adjacent book at a boundary.
+    /// No-op past the first/last chapter of the whole Bible.
+    private func move(by delta: Int) {
+        let target = chapter + delta
+        if target >= 1 && target <= book.chapterCount {
+            chapter = target
+            return
+        }
+        guard let idx = books.firstIndex(where: { $0.id == book.id }) else { return }
+        if delta > 0, idx + 1 < books.count {
+            book = books[idx + 1]
+            chapter = 1
+        } else if delta < 0, idx > 0 {
+            let prev = books[idx - 1]
+            book = prev
+            chapter = prev.chapterCount
         }
     }
 

@@ -90,5 +90,54 @@ class OmittedVerseTests(unittest.TestCase):
             os.unlink(db_file.name)
 
 
+class ParagraphTests(unittest.TestCase):
+    """A paragraphs JSON sets para_start=1 on the listed verses and 0 elsewhere."""
+
+    def test_para_start_populated_from_paragraphs_file(self):
+        src = [{"abbrev": "gn", "chapters": [["v1", "v2", "v3"]]}]
+        src_file = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump(src, src_file)
+        src_file.close()
+        # Book 1, chapter 1: verses 1 and 3 begin paragraphs.
+        para_file = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump({"1": {"1": [1, 3]}}, para_file)
+        para_file.close()
+        db_file = tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False)
+        db_file.close()
+        try:
+            build_bible_db.build(src_file.name, db_file.name, "cuv", para_file.name)
+            conn = sqlite3.connect(db_file.name)
+            try:
+                rows = conn.execute(
+                    "SELECT verse, para_start FROM verses ORDER BY verse"
+                ).fetchall()
+                self.assertEqual(rows, [(1, 1), (2, 0), (3, 1)])
+            finally:
+                conn.close()
+        finally:
+            os.unlink(src_file.name)
+            os.unlink(para_file.name)
+            os.unlink(db_file.name)
+
+    def test_no_paragraphs_file_leaves_para_start_zero(self):
+        src = [{"abbrev": "gn", "chapters": [["v1", "v2"]]}]
+        src_file = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump(src, src_file)
+        src_file.close()
+        db_file = tempfile.NamedTemporaryFile(suffix=".sqlite", delete=False)
+        db_file.close()
+        try:
+            build_bible_db.build(src_file.name, db_file.name, "cuv")
+            conn = sqlite3.connect(db_file.name)
+            try:
+                starts = [r[0] for r in conn.execute("SELECT para_start FROM verses").fetchall()]
+                self.assertEqual(starts, [0, 0])
+            finally:
+                conn.close()
+        finally:
+            os.unlink(src_file.name)
+            os.unlink(db_file.name)
+
+
 if __name__ == "__main__":
     unittest.main()

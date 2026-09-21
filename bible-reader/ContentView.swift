@@ -67,7 +67,7 @@ struct ContentView: View {
                     case let .chapters(book):
                         ChapterListView(store: store, book: book)
                     case let .reading(book, chapter):
-                        ReadingView(store: store, secondaryStore: secondary, book: book, chapter: chapter)
+                        ReadingView(store: store, secondaryStore: secondary, book: book, chapter: chapter, books: books)
                     }
                 }
                 .toolbar {

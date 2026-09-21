@@ -11,10 +11,18 @@ strings.
     [ { "abbrev": "gn", "chapters": [ ["v1 text", "v2 text", ...], ... ] }, ... ]
 
 ## Build
-    python3 build_bible_db.py source_cuv.json ../bible-reader/bible.sqlite cuv
+    python3 build_bible_db.py source_cuv.json ../bible-reader/bible.sqlite cuv paragraphs_cuv.json
+
+The optional 4th argument is a paragraph map (see **Paragraphs (分段)** below); the
+builder writes a `verses.para_start` flag (1 = this verse begins a paragraph).
+Omit it to build a translation with no paragraph data (`para_start` stays 0).
+
+> The builder requires a **fresh** output path — delete an existing
+> `bible.sqlite` first (`rm -f ../bible-reader/bible.sqlite`), it does not
+> overwrite tables in place.
 
 ## Test
-    python3 -m unittest test_build_bible_db -v
+    python3 -m unittest test_build_bible_db test_extract_paragraphs -v
 
 ## Data provenance
 - **Source:** getbible.net v2 API, translation `cus` — <https://api.getbible.net/v2/cus.json>
@@ -36,7 +44,31 @@ To reproduce:
 
     curl -sL -o raw_download.json https://api.getbible.net/v2/cus.json
     python3 convert_source.py raw_download.json source_cuv.json
-    python3 build_bible_db.py source_cuv.json ../bible-reader/bible.sqlite cuv
+    rm -f ../bible-reader/bible.sqlite
+    python3 build_bible_db.py source_cuv.json ../bible-reader/bible.sqlite cuv paragraphs_cuv.json
+
+## Paragraphs (分段)
+
+The getbible `cus` text is flat — no paragraph or section structure. Paragraph
+breaks are sourced separately from the USFM edition of the same translation and
+merged in at build time (only the structure; the verse text stays the getbible
+`cus` text, and editorial section headings `\\s1` are intentionally dropped).
+
+- **Source:** ebible.org `cmn-cu89s` (新标点和合本, Chinese Union New Punctuation,
+  simplified), USFM bundle — <https://ebible.org/Scriptures/cmn-cu89s_usfm.zip>
+  (details: <https://ebible.org/find/details.php?id=cmn-cu89s>).
+- **License:** Public Domain (stated on the ebible.org details page).
+- **Downloaded:** 2026-06-17.
+- **Extraction:** `extract_paragraphs.py` walks the USFM and records, per
+  book/chapter, the verse numbers that begin a paragraph — any paragraph/poetry
+  marker (`\\p`, `\\m`, `\\q…`, list items, etc.; `\\nb` excluded) plus verse 1 of
+  every chapter. Output: `paragraphs_cuv.json`.
+
+To reproduce the paragraph map:
+
+    curl -sL -o cmn-cu89s_usfm.zip https://ebible.org/Scriptures/cmn-cu89s_usfm.zip
+    mkdir -p cuvs_usfm && unzip -q cmn-cu89s_usfm.zip -d cuvs_usfm
+    python3 extract_paragraphs.py cuvs_usfm paragraphs_cuv.json
 
 > **FTS note:** `verses_fts` uses the FTS5 `trigram` tokenizer so Chinese
 > substring/phrase search works (the default `unicode61` tokenizer does not

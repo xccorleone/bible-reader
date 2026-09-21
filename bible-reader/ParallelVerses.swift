@@ -7,6 +7,8 @@ struct ParallelRow: Identifiable, Equatable {
     let number: Int
     let primary: String
     let secondary: String?
+    /// True when this verse begins a new paragraph (分段) in the primary text.
+    var startsParagraph: Bool = false
     var id: Int { number }
 }
 
@@ -23,7 +25,8 @@ enum ParallelVerses {
         }
         return primary.map { verse in
             ParallelRow(number: verse.number, primary: verse.text,
-                        secondary: secondary == nil ? nil : secondaryByNumber[verse.number])
+                        secondary: secondary == nil ? nil : secondaryByNumber[verse.number],
+                        startsParagraph: verse.startsParagraph)
         }
     }
 }
