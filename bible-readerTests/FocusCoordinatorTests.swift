@@ -118,4 +118,27 @@ struct FocusCoordinatorTests {
         coord.setSelection(data: Data([7]))       // change selection AFTER completion
         #expect(lock.persistedSelection == Data([7]))  // new token persisted despite no shield
     }
+
+    @Test func reconcileReArmsMonitoringWhileEnabled() throws {
+        let context = try makeContext()
+        let lock = FakeLock()
+        let clock = Clock()
+        let coord = FocusCoordinator(context: context, lock: lock, now: { clock.t }, calendar: utc)
+        coord.setTarget(minutes: 1)
+        coord.setSelection(data: Data([1]))
+        coord.setEnabled(true)
+        lock.monitoring = false        // reinstall drops DeviceActivity + the shared enabled flag
+        coord.reconcile()              // foreground must re-assert it, or midnight never re-arms
+        #expect(lock.monitoring == true)
+    }
+
+    @Test func reconcileDoesNotArmMonitoringWhileDisabled() throws {
+        let context = try makeContext()
+        let lock = FakeLock()
+        let clock = Clock()
+        let coord = FocusCoordinator(context: context, lock: lock, now: { clock.t }, calendar: utc)
+        coord.setEnabled(false)
+        coord.reconcile()
+        #expect(lock.monitoring == false)
+    }
 }

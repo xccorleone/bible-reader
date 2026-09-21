@@ -44,6 +44,10 @@ final class FocusCoordinator {
     func reconcile() {
         let plan = self.plan
         guard plan.isEnabled else { lock.removeShield(); return }
+        // Re-assert OS-side monitoring: a reinstall clears the App Group flag the
+        // extension reads and can drop the DeviceActivity registration with it,
+        // which would leave midnight with nothing to re-arm the shield.
+        lock.startDailyMonitoring()
         let session = todaySession
         // Self-heal completion: a lowered target can complete today retroactively.
         if !session.isComplete && session.accumulatedSeconds >= Double(plan.dailyTargetMinutes * 60) {

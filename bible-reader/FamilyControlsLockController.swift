@@ -58,6 +58,7 @@ final class FamilyControlsLockController: LockControlling {
 
     func startDailyMonitoring() {
 #if os(iOS)
+        FocusSharedStore.saveEnabled(true)     // extension re-arms only while enabled
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59),
@@ -68,6 +69,7 @@ final class FamilyControlsLockController: LockControlling {
 
     func stopDailyMonitoring() {
 #if os(iOS)
+        FocusSharedStore.saveEnabled(false)
         center.stopMonitoring([activityName])
 #endif
     }
